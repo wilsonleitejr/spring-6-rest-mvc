@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -77,7 +78,7 @@ public class BeerController {
 	@GetMapping(BEER_ID_PATH)
 	public Beer getBeerById(@PathVariable("beerId") UUID beerId) {
 		log.debug("Get Beer by Id in controller. Id: " + beerId);
-		return beerService.getBeerById(beerId);
+		return beerService.getBeerById(beerId)
+				.orElseThrow(NotFoundException::new);
 	}
-
 }

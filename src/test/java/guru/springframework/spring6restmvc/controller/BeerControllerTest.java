@@ -18,6 +18,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.math.BigDecimal;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -141,9 +142,20 @@ class BeerControllerTest {
 	}
 
 	@Test
+	void testGetByIdNotFound() throws Exception {
+		var testBeerId = UUID.randomUUID();
+
+		given(beerService.getBeerById(testBeerId)).willReturn(Optional.empty());
+
+		mockMvc.perform(get(BeerController.BEER_ID_PATH, testBeerId)
+				.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isNotFound());
+	}
+
+	@Test
 	void testGetBeerById() throws Exception {
 		var testBeer = beerServiceImpl.listBeers().get(0);
-		given(beerService.getBeerById(testBeer.getId())).willReturn(testBeer);
+		given(beerService.getBeerById(testBeer.getId())).willReturn(Optional.of(testBeer));
 
 		mockMvc.perform(get(BeerController.BEER_ID_PATH, testBeer.getId())
 				.accept(MediaType.APPLICATION_JSON))

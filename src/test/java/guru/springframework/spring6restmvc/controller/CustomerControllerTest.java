@@ -17,6 +17,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -133,11 +134,21 @@ class CustomerControllerTest {
 	}
 
 	@Test
+	void testGetCustomerByIdNotFound() throws Exception {
+		var testCustomerId = UUID.randomUUID();
+		given(customerService.getCustomerById(testCustomerId)).willReturn(Optional.empty());
+
+		mockMvc.perform(get(CustomerController.CUSTOMER_ID_PATH, testCustomerId)
+				.accept(MediaType.APPLICATION_JSON))
+		.andExpect(status().isNotFound());
+	}
+
+	@Test
 	void testGetCustomerById() throws Exception {
 		var testCustomer = customerServiceImpl.getAllCustomers().get(0);
-		given(customerService.getCustomerById(testCustomer.getId())).willReturn(testCustomer);
+		given(customerService.getCustomerById(testCustomer.getId())).willReturn(Optional.of(testCustomer));
 
-		mockMvc.perform(get("/api/v1/customer/" + testCustomer.getId())
+		mockMvc.perform(get(CustomerController.CUSTOMER_ID_PATH, testCustomer.getId())
 				.accept(MediaType.APPLICATION_JSON))
 		.andExpect(status().isOk())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
