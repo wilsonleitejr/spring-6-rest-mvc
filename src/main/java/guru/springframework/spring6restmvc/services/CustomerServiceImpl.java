@@ -9,63 +9,35 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
-import guru.springframework.spring6restmvc.model.Customer;
+import guru.springframework.spring6restmvc.model.CustomerDTO;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
 public class CustomerServiceImpl implements CustomerService {
 
-	private final Map<UUID, Customer> customerMap;
+	private final Map<UUID, CustomerDTO> customerMap;
 
 	public CustomerServiceImpl() {
 		this.customerMap = new HashMap<>();
-
-		Customer customer1 = Customer.builder()
-				.id(UUID.randomUUID())
-				.name("Customer 1")
-				.version(1)
-				.createdDate(LocalDateTime.now())
-				.updateDate(LocalDateTime.now())
-				.build();
-
-		Customer customer2 = Customer.builder()
-				.id(UUID.randomUUID())
-				.name("Customer 2")
-				.version(1)
-				.createdDate(LocalDateTime.now())
-				.updateDate(LocalDateTime.now())
-				.build();
-
-		Customer customer3 = Customer.builder()
-				.id(UUID.randomUUID())
-				.name("Customer 3")
-				.version(1)
-				.createdDate(LocalDateTime.now())
-				.updateDate(LocalDateTime.now())
-				.build();
-
-		customerMap.put(customer1.getId(), customer1);
-		customerMap.put(customer2.getId(), customer2);
-		customerMap.put(customer3.getId(), customer3);
 	}
 
 	@Override
-	public Optional<Customer> getCustomerById(UUID id) {
+	public Optional<CustomerDTO> getCustomerById(UUID id) {
 		return Optional.of(this.customerMap.get(id));
 	}
 
 	@Override
-	public List<Customer> getAllCustomers() {
+	public List<CustomerDTO> getAllCustomers() {
 		return customerMap.values()
 				.stream()
 				.toList();
 	}
 
 	@Override
-	public Customer saveNewCustomer(Customer customer) {
+	public CustomerDTO saveNewCustomer(CustomerDTO customer) {
 		log.debug("Handle post in service");
-		Customer savedCustomer = Customer.builder()
+		CustomerDTO savedCustomer = CustomerDTO.builder()
 				.id(UUID.randomUUID())
 				.version(1)
 				.createdDate(LocalDateTime.now())
@@ -79,33 +51,43 @@ public class CustomerServiceImpl implements CustomerService {
 	}
 
 	@Override
-	public void updateCustomerById(UUID customerId, Customer customer) {
+	public Optional<CustomerDTO> updateCustomerById(UUID customerId, CustomerDTO customer) {
 		log.debug("Update by Id in service. Id: " + customerId + ", Customer: " + customer);
 
-		Customer existingCustomer = customerMap.get(customerId);
+		CustomerDTO existingCustomer = customerMap.get(customerId);
+		if (existingCustomer == null) {
+			log.debug("Customer with id " + customerId + " not found");
+			return Optional.empty();
+		}
+
 		existingCustomer.setName(customer.getName());
 		existingCustomer.setVersion(existingCustomer.getVersion() + 1);
 		existingCustomer.setUpdateDate(LocalDateTime.now());
+
+		return Optional.of(existingCustomer);
 	}
 
 	@Override
-	public void deleteCustomerById(UUID customerId) {
+	public Boolean deleteCustomerById(UUID customerId) {
 		log.debug("Delete by Id in service. Id: " + customerId);
 
-		this.customerMap.remove(customerId);
-
-		log.debug("Customer with id " + customerId + " deleted");
+		return this.customerMap.remove(customerId) != null;
 	}
 
 	@Override
-	public void patchCustomerById(UUID customerId, Customer customer) {
+	public Optional<CustomerDTO> patchCustomerById(UUID customerId, CustomerDTO customer) {
 		log.debug("Patch by Id in service. Id: " + customerId + ", Customer: " + customer);
 
-		Customer existingCustomer = customerMap.get(customerId);
+		CustomerDTO existingCustomer = customerMap.get(customerId);
+		if (existingCustomer == null) {
+			log.debug("Customer with id " + customerId + " not found");
+			return Optional.empty();
+		}
 
 		if (customer.getName() != null && !customer.getName().isBlank()) {
 			existingCustomer.setName(customer.getName());
 		}
+		return Optional.of(existingCustomer);
 	}
 
 }
