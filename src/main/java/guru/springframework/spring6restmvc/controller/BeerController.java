@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -52,7 +53,7 @@ public class BeerController {
 	}
 
 	@PutMapping(BEER_ID_PATH)
-	public ResponseEntity updateBeerById(@PathVariable("beerId") UUID beerId, @RequestBody BeerDTO beer) {
+	public ResponseEntity updateBeerById(@PathVariable("beerId") UUID beerId, @Validated @RequestBody BeerDTO beer) {
 		log.debug("Update by Id in controller. Id: " + beerId + ", Beer: " + beer);
 
 		if (beerService.updateBeerById(beerId, beer).isEmpty()) {
@@ -63,7 +64,7 @@ public class BeerController {
 	}
 
 	@PostMapping(BEER_PATH)
-	public ResponseEntity handlePost(@RequestBody BeerDTO beer) {
+	public ResponseEntity handlePost(@Validated @RequestBody BeerDTO beer) {
 		log.debug("Handle post in controller. Beer: " + beer);
 
 		BeerDTO savedBeer = beerService.saveNewBeer(beer);

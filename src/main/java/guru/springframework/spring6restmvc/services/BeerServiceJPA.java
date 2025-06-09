@@ -75,7 +75,7 @@ public class BeerServiceJPA implements BeerService {
 	}
 
 	@Override
-	public Optional<BeerDTO> patchBeerById(UUID beerId, BeerDTO beer) {
+	public Optional<BeerDTO> patchBeerById(UUID beerId, BeerDTO beerDto) {
 		var opBeer = beerRepository.findById(beerId);
 
 		if (opBeer.isEmpty()) {
@@ -84,21 +84,23 @@ public class BeerServiceJPA implements BeerService {
 
 		var existingBeer = opBeer.get();
 		// Update only the fields that are not null in the DTO
-		if (beer.getBeerName() != null) {
-			existingBeer.setBeerName(beer.getBeerName());
+		if (beerDto.getBeerName() != null) {
+			existingBeer.setBeerName(beerDto.getBeerName());
 		}
-		if (beer.getBeerStyle() != null) {
-			existingBeer.setBeerStyle(beer.getBeerStyle());
+		if (beerDto.getBeerStyle() != null) {
+			existingBeer.setBeerStyle(beerDto.getBeerStyle());
 		}
-		if (beer.getUpc() != null) {
-			existingBeer.setUpc(beer.getUpc());
+		if (beerDto.getUpc() != null) {
+			existingBeer.setUpc(beerDto.getUpc());
 		}
-		if (beer.getQuantityOnHand() != null) {
-			existingBeer.setQuantityOnHand(beer.getQuantityOnHand());
+		if (beerDto.getQuantityOnHand() != null) {
+			existingBeer.setQuantityOnHand(beerDto.getQuantityOnHand());
 		}
-		if (beer.getPrice() != null) {
-			existingBeer.setPrice(beer.getPrice());
+		if (beerDto.getPrice() != null) {
+			existingBeer.setPrice(beerDto.getPrice());
 		}
+
+		beerRepository.save(existingBeer);
 
 		return Optional.of(beerMapper.beerToBeerDto(existingBeer));
 	}

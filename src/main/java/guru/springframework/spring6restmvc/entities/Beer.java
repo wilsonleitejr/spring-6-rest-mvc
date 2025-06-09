@@ -12,6 +12,10 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Version;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -31,15 +35,29 @@ public class Beer {
 	@UuidGenerator
 	@Column(length = 36, columnDefinition = "varchar", updatable = false, nullable = false)
 	private UUID id;
-	@Column(nullable = false)
+
+	@NotNull
+	@NotBlank
+	@Size(max = 50)
+	@Column(length = 50, nullable = false)
 	private String beerName;
 
+	@NotNull
 	private BeerStyle beerStyle;
+
+	@NotNull
+	@NotBlank
+	@Size(max = 255)
 	private String upc;
 	private Integer quantityOnHand;
+
+	@NotNull
+	@PositiveOrZero
 	private BigDecimal price;
+
 	private LocalDateTime createdDate;
 	private LocalDateTime updateDate;
+
 	@Version
 	private Integer version;
 

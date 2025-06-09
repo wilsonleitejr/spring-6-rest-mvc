@@ -2,15 +2,27 @@ package guru.springframework.spring6restmvc.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Stream;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.test.annotation.Rollback;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.WebApplicationContext;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import guru.springframework.spring6restmvc.mappers.BeerMapper;
 import guru.springframework.spring6restmvc.model.BeerDTO;
@@ -27,6 +39,32 @@ class BeerControllerIT {
 
 	@Autowired
 	BeerMapper beerMapper;
+
+	@Autowired
+	ObjectMapper objectMapper;
+
+	@Autowired
+	WebApplicationContext wac;
+
+	MockMvc mockMvc;
+
+	@BeforeEach
+	void setup() {
+		mockMvc = MockMvcBuilders.webAppContextSetup(wac).build();
+	}
+
+	@Test
+	void testPatchBeerBadName() throws Exception {
+		var beer = beerRepository.findAll().get(0);
+		var beerMap = Map.of("beerName", Stream.generate(() -> "a").limit(100).reduce("", String::concat));
+
+		mockMvc.perform(patch(BeerController.BEER_ID_PATH, beer.getId())
+				.accept(MediaType.APPLICATION_JSON)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(beerMap)))
+		.andExpect(status().isBadRequest())
+		.andExpect(jsonPath("$.length()").value(1));
+	}
 
 	@Test
 	void testPatchIdNotFound() {

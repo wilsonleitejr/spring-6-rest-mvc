@@ -18,10 +18,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.hibernate.validator.cfg.defs.UUIDDef;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -63,8 +63,32 @@ class BeerControllerTest {
 	}
 
 	@Test
+	void testUpdateBeerEmptyBeerName() throws Exception {
+		var beerDto = BeerDTO.builder().beerName("").build();
+
+		mockMvc.perform(put(BeerController.BEER_ID_PATH, UUID.randomUUID())
+				.accept(MediaType.APPLICATION_JSON)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(beerDto)))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.length()", is(5)));
+	}
+
+	@Test
+	void testCreateBeerNullBeerName() throws Exception {
+		var beerDto = BeerDTO.builder().build();
+
+		mockMvc.perform(post(BeerController.BEER_PATH)
+				.accept(MediaType.APPLICATION_JSON)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(beerDto)))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.length()", is(6)));
+	}
+
+	@Test
 	void testPatchBeerById() throws Exception {
-		var testBeer = BeerDTO.builder()
+		var beerDto = BeerDTO.builder()
 				.id(UUID.randomUUID())
 				.beerName("Heineken")
 				.beerStyle(BeerStyle.LAGGER)
@@ -72,17 +96,17 @@ class BeerControllerTest {
 				.quantityOnHand(1)
 				.upc("100")
 				.build();
-		given(beerService.patchBeerById(testBeer.getId(), testBeer)).willReturn(Optional.of(testBeer));
+		given(beerService.patchBeerById(beerDto.getId(), beerDto)).willReturn(Optional.of(beerDto));
 
-		mockMvc.perform(patch(BeerController.BEER_ID_PATH, testBeer.getId())
+		mockMvc.perform(patch(BeerController.BEER_ID_PATH, beerDto.getId())
 				.accept(MediaType.APPLICATION_JSON)
 				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(testBeer)))
+				.content(objectMapper.writeValueAsString(beerDto)))
 		.andExpect(status().isNoContent());
 
-		verify(beerService).patchBeerById(eq(testBeer.getId()), beerCaptor.capture());
+		verify(beerService).patchBeerById(eq(beerDto.getId()), beerCaptor.capture());
 
-		assertThat(beerCaptor.getValue().getBeerName()).isEqualTo(testBeer.getBeerName());
+		assertThat(beerCaptor.getValue().getBeerName()).isEqualTo(beerDto.getBeerName());
 	}
 
 
